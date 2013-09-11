@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+
+        <title>Reusable Responsive Charts with D3.js</title>
+
+        <meta name="description" content="Using D3.js and d3.Chart to create visualisations that can be customised tu use different features / styles and fit multiple viewports.">
+        <meta name="author" content="Colin Gourlay">
+
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+        <link rel="stylesheet" href="css/reveal.min.css">
+        <link rel="stylesheet" href="css/theme/default.css" id="theme">
+
+        <!-- For syntax highlighting -->
+        <link rel="stylesheet" href="lib/css/zenburn.css">
+
+        <!-- If the query includes 'print-pdf', use the PDF print sheet -->
+        <script>
+            document.write( '<link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' );
+        </script>
+
+        <!--[if lt IE 9]>
+        <script src="lib/js/html5shiv.js"></script>
+        <![endif]-->
+    </head>
+
+    <body>
+
+        <div class="reveal">
+
+            <div class="slides">
+
+                <section>
+                    <h1>Reusable<br>Responsive Charts<br>with D3.js</h1>
+                    <p>
+                        <a href="http://colin-gourlay.com">Colin Gourlay</a> / <a href="http://twitter.com/collypops">@collypops</a>
+                    </p>
+                </section>
+
+                <section>
+                    <img src="img/abc-news-logo.png" />
+                    <img src="img/abc-news-homepage.png" />
+                </section>
+
+                <section>
+                    <h2>Data Visualisation</h2>
+                    <img src="img/abc-news-budget.png" />
+                </section>
+
+                <section>
+                    <h2>D3.js</h2>
+                    <p>Data-Driven Documents</p>
+                    <img src="img/d3-examples.png" />
+                </section>
+
+                <section>
+                    <h2>Selection</h2>
+                    <pre><code class="javascript" data-trim contenteditable>
+d3.selectAll("p").style("color", "white");
+                    </code></pre>
+                    <br><br>
+                    <h2>Data</h2>
+                    <pre><code class="javascript" data-trim contenteditable>
+d3.selectAll("p")
+    .data([1, 2, 3, 4, 5])
+    .text(function(d) { return "Number: " + d; });
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Join, Enter, Update &amp; Exit</h2>
+                    <pre><code class="javascript" data-trim contenteditable>
+function update(data) {
+    // Join
+    var p = d3.select("body").selectAll("p").data(data);
+
+    // Enter
+    p.enter().append("p");
+
+    // Enter + Update
+    p.text(function (d) { return "Number: " + d; });
+
+    // Exit
+    p.exit().remove();
+}
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Events &amp; Transitions</h2>
+                    <pre><code class="javascript" data-trim contenteditable>
+d3.select("button").on("click", function () {
+
+    d3.select("body").transition()
+        .duration(500)
+        .style("background-color", "black");
+
+});
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h3>Also...</h3>
+                    <ul>
+                        <li>Array, color &amp; time utilities</li>
+                        <li>CSV/TSV formatting</li>
+                        <li>Scale generators</li>
+                        <li>SVG path generators</li>
+                        <li>Chart layouts</li>
+                        <li>Map projections</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Budget Interactive</h2>
+                    <img src="img/abc-news-budget.png" />
+                </section>
+
+                <section>
+                    <h2>It was cool, but it was also...</h2>
+                    <ul>
+                        <li class="fragment">Unportable</li>
+                        <li class="fragment">Unresponsive</li>
+                    </ul>
+                    <br><br>
+                    <p class="fragment">...and it took wayyy too long to build.</p>
+                </section>
+
+                <section>
+                    <p>D3 is a library, not a framework</p>
+                    <br><br>
+                    <h2>We need a framework, dammit!</h2>
+                </section>
+
+                <section>
+                    <img src="img/guardian-bocoup.png" />
+                    <p>...joined forces to create...
+                </section>
+
+                <section>
+                    <img src="img/miso-logo.png" />
+                    <p>...the Miso Project, which then gave us...
+                </section>
+
+                <section>
+                    <img src="img/d3.chart-logo.png" />
+                    <blockquote>"...a framework for building reusable charts with d3.js"</blockquote>
+                </section>
+
+                <section>
+                    <h2>d3.chart</h2>
+                    <pre><code class="javascript" data-trim contenteditable>
+// Define a new chart type: a circle chart
+d3.chart("CircleChart", {
+    initialize: function () { ... }
+});
+
+// Create an instance of the chart on a d3 selection
+var chart = d3.select("body")
+    .append("svg")
+    .attr("height", 30)
+    .attr("width", 400)
+    .chart("CircleChart");
+
+// Render it with some data
+chart.draw([1,4,6,9,12,13,30]);
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Initialization</h2>
+                    <pre><code class="javascript" data-trim contenteditable>
+initialize: function () {
+
+    // Create a 'layer' for the circles
+    this.layer("circles", this.base.append("g"), {
+
+        // Select the elements and bind the data to them.
+        dataBind: function (data) {
+            return this.selectAll("circle")
+                .data(data);
+        },
+
+        // Insert actual circles
+        insert: function () {
+            return this.append("circle");
+        },
+
+        // Define lifecycle events
+        events: {
+
+            // Paint new elements, but set their radius to 0
+            "enter": function() {
+                return this.attr("cx", function(d) {
+                    return d * 10;
+                })
+                .attr("cy", 10)
+                .attr("r", 0);
+            },
+
+            // ...then transition them to a radius of 5
+            "enter:transition": function() {
+                return this
+                    .delay(500)
+                    .attr("r", 5);
+            },
+
+            // Before removing circles, transition
+            // their radius back to 0
+            "exit:transition": function() {
+                return this.duration(1000)
+                    .attr("r", 0)
+                    .remove();
+            }
+        }
+    });
+}
+                    </code></pre>
+                </section>
+
+
+                <section>
+                    <h2>It's all about layers</h2>
+                    <p class="fragment">When we call <code>draw</code> with some data, it gets passed through each layer you've defined (lines, bars, axes, labels, etc.).</p>
+                    <p class="fragment">Each layer knows how to: </p>
+                    <ol>
+                        <li class="fragment">Bind data</li>
+                        <li class="fragment">Insert elements</li>
+                        <li class="fragment">Update them</li>
+                        <li class="fragment">Remove them</li>
+                        <li class="fragment">Perform transitions</li>
+                    </ol>
+                </section>
+
+                <section>
+                    <h2>Configuration</h2>
+                    <ul>
+                        <li class="fragment">Define defaults (margins, dimensions, layer positions)</li>
+                        <li class="fragment">Define an API for interacting with the chart at runtime:</li>
+                        <li class="fragment">Access the API through a fluent interface:<pre><code class="javascript" data-trim contenteditable>
+chart.width(200).margin(10).circleRadius(10);
+                    </code></pre></li>
+                    </ul>
+                </section>
+
+                <section>
+                    <img src="img/vote-compass-logo.png" />
+                </section>
+
+                <section>
+                    <img src="img/vote-compass-question.png" />
+                </section>
+
+                <section>
+                    <img src="img/vote-compass-results.png" />
+                </section>
+
+                <section>
+                    <h1>1.35 million</h1>
+                    <h2>Responses</h2>
+                    <p class="fragment">So we've got some data to play with. Yay.</p>
+                </section>
+
+                <section>
+                    <h2>Reports</h2>
+                    <ul>
+                        <li>Most important issues</li>
+                        <li>Question answers split by demographic</li>
+                        <li>Party leaders (trust &amp; confidence)</li>
+                        <li>Political ideology (state-by-state)</li>
+                        <li>etc.</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Scope</h2>
+                    <ul>
+                        <li>Ordinal scatter plots</li>
+                        <li>Normalised, stacked bar charts</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Ordinal scatter plot</h2>
+                    <img src="img/salience-gender.png" />
+                </section>
+
+                <section>
+                    <h2>Normalised stacked bar chart</h2>
+                    <img src="img/marriage-equality-religion.png" />
+                </section>
+
+                <section>
+                    <h2>Ordinal Scatter Plot: components</h2>
+                    <p>(Demo)</p>
+                    <br><br>
+                    <ul>
+                        <li>Background &amp; Grid</li>
+                        <li>Dots &amp; Tooltips</li>
+                        <li>Axis &amp; Labels</li>
+                        <li>Legend</li>
+                        <li>Title</li>
+                    </ul>
+                </section>
+
+                <!-- Demo salience report -->
+
+                <section>
+                    <h2>Ordinal Scatter Plot: Code</h2>
+                    <pre><code class="javascript" data-trim contenteditable>
+chart.areas = {
+    labelsXTop: chart.base.append('g').classed('OrdinalScatterPlot_labels OrdinalScatterPlot_labels-x OrdinalScatterPlot_labels-x-top', true),
+    labelsXBottom: chart.base.append('g').classed('OrdinalScatterPlot_labels OrdinalScatterPlot_labels-x OrdinalScatterPlot_labels-x-bottom', true),
+    labelsY: chart.base.append('g').classed('OrdinalScatterPlot_labels OrdinalScatterPlot_labels-y', true),
+    background: chart.base.append('g').classed('OrdinalScatterPlot_background', true),
+    gridX: chart.base.append('g').classed('OrdinalScatterPlot_grid OrdinalScatterPlot_grid-x', true),
+    gridY: chart.base.append('g').classed('OrdinalScatterPlot_grid OrdinalScatterPlot_grid-y', true),
+    border: chart.base.append('rect').classed('OrdinalScatterPlot_border', true),
+    points: chart.base.append('g').classed('OrdinalScatterPlot_points', true),
+    legend: chart.base.append('g').classed('OrdinalScatterPlot_legend', true),
+    title: chart.base.append('g').classed('OrdinalScatterPlot_title', true)
+};
+                    </code></pre>
+                    <p>Each area has a corresponding layer</p>
+                </section>
+
+                <section>
+                    <pre><code class="javascript" data-trim contenteditable>
+d3.chart('OrdinalScatterPlot', {
+
+    // Expected datum properties
+    dataAttrs: ['metric', 'value', 'series'],
+
+    // Initialisation (+ settings, areas, layers, events)
+    initialize: function() { ... }
+
+    // Fluent API
+
+    // - Chart Size
+    width: function (width, excludesDecorations) { ... },
+    height: function (height, excludesDecorations) { ... },
+
+    // - Metric labels (y-axis)
+    metricLabelsWidth: function (width, maintainsTotalWidth) { ... },
+
+    // - Control dot shape & colour (based on series)
+    seriesScales: function (names, colors, symbols) { ... },
+
+    // - Legend
+    showLegend: function (maintainsTotalHeight) { ... },
+    hideLegend: function (maintainsTotalHeight) { ... },
+
+    // - Title
+    title: function (title, subtitle) { ... },
+    showTitle: function (maintainsTotalHeight) { ... },
+    hideTitle: function (maintainsTotalHeight) { ... },
+
+    // - Value labels (x-axis)
+    showLabelsX: function (maintainsTotalHeight) { ... },
+    hideLabelsX: function (maintainsTotalHeight) { ... },
+    showLabelsXTop: function (maintainsTotalHeight) { ... },
+    hideLabelsXTop: function (maintainsTotalHeight) { ... },
+    showLabelsXBottom: function (maintainsTotalHeight) { ... },
+    hideLabelsXBottom: function (maintainsTotalHeight) { ... },
+    formatLabelsX: function (formatFn) { ... },
+    valueDomain: function(min, max) { ... },
+
+    // - Tooltips
+    formatTooltips: function (formatFn) { ... },
+    _defaultTooltipFormat: function (d) { ... },
+
+    // - Dot animation toggle
+    animated: function (isAnimated) { ... },
+
+    // - Linked chart behaviours
+    linkSymbiote: function(symbiote) { ... },
+
+    // Fluent API internal functions
+
+    // - Scales
+    _updateXScale: function () { ... },
+    _updateYScale: function () { ... },
+
+    // - Area size measurement
+    _effectiveXDecorationsWidth: function () { ... },
+    _effectiveLeftDecorationsWidth: function () { ... },
+    _effectiveRightDecorationsWidth: function () { ... },
+    _effectiveYDecorationsHeight: function () { ... },
+    _effectiveTopDecorationsHeight: function () { ... },
+    _effectiveBottomDecorationsHeight: function () { ... },
+    _effectiveLegendHeight: function () { ... },
+    _effectiveTitleHeight: function () { ... },
+    _effectiveLabelsXTopHeight: function () { ... },
+    _effectiveLabelsXBottomHeight: function () { ... },
+
+    // - Area size/position management
+    _updateAreasDisplay: function () { ... }
+});
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h2>Filtered Data</h2>
+                    <p>The same chart can be used to display<br>different sets of data.</p>
+                </section>
+
+                <section>
+                    <img src="img/salience-gender.png" />
+                </section>
+
+                <section>
+                    <img src="img/salience-vote-intention.png" />
+                </section>
+
+                <section>
+                    <h2>Combining charts<br>&amp;<br> toggling components</h2>
+                </section>
+
+                <section>
+                    <h3>This is actually 6 charts</h3>
+                    <img src="img/leaders-vote-intention.png" />
+                </section>
+
+                <section>
+                    <pre><code class="javascript" data-trim contenteditable>
+function chart() {
+    return d3.select('#chart')
+    .append('div')
+    .append("svg")
+    .chart("OrdinalScatterPlot")
+    .width(700)
+    .height(44, true)
+    .valueDomain(0, 10)
+    .hideLegend()
+    .hideLabelsX()
+    .animated(true);
+}
+
+var charts = [
+    chart().title('Kevin Rudd', 'Labor').showLegend(),
+    chart().height(88, true).showLabelsX(),
+    chart().title('Tony Abbott', 'Coalition'),
+    chart().height(88, true).showLabelsX(),
+    chart().title('Christine Milne', 'Greens'),
+    chart().height(88, true).showLabelsX()
+];
+                    </code></pre>
+                </section>
+
+                <section>
+                    <h3>Styling</h3>
+                    <pre><code class="javascript" data-trim contenteditable>
+charts[0].base.classed('ptyred', true);
+charts[2].base.classed('ptyblue', true);
+charts[4].base.classed('ptylightgreen', true);
+                    </code></pre>
+
+                    <pre><code class="css" data-trim contenteditable>
+.ptyred .OrdinalScatterPlot_labels-y .tick:first-child { font-weight: bold; }
+.ptyred .OrdinalScatterPlot_subtitle { fill: #BE4848; }
+.ptyred .OrdinalScatterPlot_border { stroke: #E7CACA; }
+.ptyred .OrdinalScatterPlot_background .tick { stroke: #EFDCDC; }
+.ptyred .OrdinalScatterPlot_background .tick:nth-child(even) { stroke: #F7EEEE; }
+                    </code></pre>
+                </section>
+
+                <section>
+                    <img src="img/leaders-2-rudd-overall.png" />
+                </section>
+
+                <section>
+                    <h3>Linking interaction</h3>
+                    <pre><code class="javascript" data-trim contenteditable>
+// Link charts as symbiotes
+charts.forEach(function (a) {
+    charts.forEach(function (b) {
+        if (a !== b) {
+            a.linkSymbiote(b);
+        }
+    });
+});
+                    </code></pre>
+                    <pre><code class="javascript" data-trim contenteditable>
+// In one of the dot mouseover event handlers...
+onActivateDot = function (d) {
+    function activateDot(chart) { ... }
+    activateDot(chart);
+    chart.symbiotes.forEach(activateDot);
+};
+                    </code></pre>
+                </section>
+
+                <!-- Demo leaders report -->
+
+                <section>
+                    <h2>Mobile?</h2>
+                    <p class="fragment">We can already size & resize the chart at will</p>
+                    <p class="fragment">Just bind to window resize event</p>
+                    <pre class="fragment"><code class="javascript" data-trim contenteditable>
+window.addEventListener('resize', function () {
+    var width = $(chart.base.node().parentNode).width();
+    chart.animated(false).width(width).animated(true);
+}, false);
+                    </code></pre>
+                    <!-- <p class="fragment">Debounce!</p> -->
+                </section>
+
+                <section>
+                    <h2>Full screen?</h2>
+                    <p class="fragment">Sure.</p>
+                </section>
+
+                <!-- Demo leaders report _fullscreen_ -->
+
+                <section>
+                    <h2>Next...</h2>
+                    <ul>
+                        <li class="fragment">d3.chart is designed for 'sub-classing'</li>
+                        <li class="fragment">sub-charting?</li>
+                        <li class="fragment">I'm working on a responsive base chart you can build on.</li>
+                        <li class="fragment">Maps</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Also, look at NVD3</h2>
+                    <img src="img/nvd3.png" />
+                </section>
+
+                <section>
+                    <h2>In summary...</h2>
+                    <ul>
+                        <li class="fragment">We're finding ways to harness D3 for reusability</li>
+                        <li class="fragment">We're making considerations for different devices</li>
+                        <li class="fragment">We're making data more accessible and fun to explore</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>Links</h2>
+                    <ul>
+                        <li>D3: <a href="http://d3js.org/">http://d3js.org/</a></li>
+                        <li>d3.chart: <a href="http://misoproject.com/d3-chart/">http://misoproject.com/d3-chart/</a></li>
+                        <li>Vote Compass results: <a href="http://www.abc.net.au/news/federal-election-2013/news-and-analysis/vote-compass-results/">http://www.abc.net.au/news/federal-election-2013/news-and-analysis/vote-compass-results/</a></li>
+                        <li>NVD3: <a href="http://nvd3.org/">http://nvd3.org/</a></li>
+                    </ul>
+                </section>
+
+                <section>
+                    <div id="lissajous"></div>
+                    <h2>Thanks</h2>
+                    <p><a href="http://twitter.com/collypops">@collypops</a></p>
+                </section>
+
+            </div>
+
+        </div>
+
+        <script src="lib/js/head.min.js"></script>
+        <script src="js/reveal.min.js"></script>
+
+
+        <script>
+
+            // Full list of configuration options available here:
+            // https://github.com/hakimel/reveal.js#configuration
+            Reveal.initialize({
+                controls: true,
+                progress: false,
+                history: true,
+                center: true,
+
+                theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+                transition: Reveal.getQueryHash().transition || 'concave', // default/cube/page/concave/zoom/linear/fade/none
+                // backgroundTransition: Reveal.getQueryHash().backgroundTransition || 'linear',
+
+
+                // Optional libraries used to extend on reveal.js
+                dependencies: [
+                    { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                    { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                    { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+                    { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+                ]
+            });
+
+        </script>
+
+
+        <script src="js/d3.v3.min.js"></script>
+        <script src="js/lissajous.js"></script>
+
+    </body>
+</html>
